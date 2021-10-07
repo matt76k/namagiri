@@ -1,7 +1,5 @@
 # Namagiri: Posit library written in Rust :crab:
 
-![](https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif)
-
 ## Overview
 
 Namagiri is a software emulation library for posits.
