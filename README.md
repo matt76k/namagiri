@@ -1,6 +1,6 @@
 # Namagiri: Posit library written in Rust :crab:
 
-<iframe src="https://giphy.com/embed/VbnUQpnihPSIgIXuZv" width="384" height="480" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>
+![](https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif)
 
 ## Overview
 
