@@ -1,0 +1,37 @@
+[package]
+name = "namagiri"
+version = "0.1.0"
+authors = ["matt <matt76k@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "namagiri"
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+num-traits = "0.2.14"
+#crate-type = ["cdylib"]
+
+[dependencies.criterion]
+version = "0.3.4"
+
+[dependencies.ndarray]
+version = "0.15.0"
+features = ["rayon"]
+
+[dependencies.numpy]
+version = "0.14.1"
+
+[dependencies.pyo3]
+version = "0.14.5"
+features = ["extension-module"]
+
+[[bench]]
+name = "flops"
+harness = false
+
+[profile.release]
+overflow-checks = false
