@@ -244,28 +244,7 @@ impl<const N: u8, const ES: u8> Add for Posit<N, ES> {
 
             let le_o = ((rv1 << ES | e1).wrapping_add(movf)).wrapping_sub(nshift);
 
-            let e_o = le_o & (0xffffffffu32 >> 32 - ES);
-            let r_o = if le_o & 0x80000000u32 == 0 {(le_o >> ES) + 1} else {(!le_o >> ES).wrapping_add(1)};
-
-            let mut rem = add_m << 1;
-
-            rem = (e_o << 32 - ES) | (rem >> ES);
-            rem = (le_o & 0x80000000u32) | rem >> 1;
-            rem = rem >> N;
-            rem = if le_o & 0x80000000u32 == 0 {(0xffffffffu32 << 32 - N) | rem} else {rem};
-
-            rem = rem >> r_o;
-
-            let mut p: u32 = (rem << N) >> 32 - N + 1;
-
-            let l = (0x80000000u32 >> (2 * N - 2)) & rem != 0;
-            let g = (0x80000000u32 >> (2 * N - 1)) & rem != 0;
-            let r = (0x80000000u32 >> (2 * N)) & rem != 0;
-            let st = (rem << (2 * N)) != 0;
-
-            let ulp = if (g & (r | st)) | (l & g & !(r | st)) {1} else {0};
-
-            p = if r_o < (N - 1).into() {p + ulp} else {p};
+            let mut p = decode(le_o, add_m, N, ES, Self::RS);
 
             p = if s1 {((!p).wrapping_add(1) & Self::BODY_MASK) | 0x1u32 << N - 1} else {p};
 
@@ -337,29 +316,7 @@ impl<const N: u8, const ES: u8> Mul for Posit<N, ES> {
 
             let e_msb = (e << (31 - Self::RS - ES - 1)) & 0x80000000u32;
 
-            let mut rem = f << 1;
-
-            rem = (e_o << 32 - ES) | (rem >> ES);
-
-            rem = e_msb | (rem >> 1);
-
-            rem = rem >> N;
-
-            rem = if e_msb == 0 {(0xffffffffu32 << (32 - N)) | rem} else {rem};
-
-            rem = rem >> r_o;
-
-
-            let mut p: u32 = (rem << N) >> (32 - N + 1);
-
-            let l = (0x80000000u32 >> (2 * N - 2)) & rem != 0;
-            let g = (0x80000000u32 >> (2 * N - 1)) & rem != 0;
-            let r = (0x80000000u32 >> (2 * N)) & rem != 0;
-            let st = (rem << (2 * N)) != 0;
-
-            let ulp = if (g & (r | st)) | (l & g & !(r | st)) {1} else {0};
-
-            p = if r_o < (N - 1).into() {p + ulp} else {p};
+            let mut p = decode(e, f, N, ES, Self::RS);
 
             if p == 0 {
                 return if s {
@@ -368,7 +325,6 @@ impl<const N: u8, const ES: u8> Mul for Posit<N, ES> {
                     Self::MINPOS
                 };
             }
-
 
             p = if s {((!p).wrapping_add(1) & Self::BODY_MASK) | 0x1u32 << N - 1} else {p};
 
