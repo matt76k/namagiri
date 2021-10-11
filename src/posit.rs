@@ -310,12 +310,6 @@ impl<const N: u8, const ES: u8> Mul for Posit<N, ES> {
 
             let e = ((rg1 << ES) | e1) + ((rg2 << ES) | e2) + movf;
 
-            let e_o = e & (0xffffffffu32 >> (32 - ES));
-
-            let r_o = min(if e & (1 << (Self::RS + ES + 1)) == 0 {(e >> ES) + 1} else {(!e >> ES).wrapping_add(1)}, (N - 1).into());
-
-            let e_msb = (e << (31 - Self::RS - ES - 1)) & 0x80000000u32;
-
             let mut p = decode(e, f, N, ES, Self::RS);
 
             if p == 0 {
@@ -363,7 +357,7 @@ impl<const N: u8, const ES: u8> Div for Posit<N, ES> {
 impl<const N: u8, const ES: u8> Rem for Posit<N, ES> {
     type Output = Self;
 
-    fn rem(self, other: Self) -> Self::Output {
+    fn rem(self, _other: Self) -> Self::Output {
         // TODO
         Self::zero()
     }

@@ -129,7 +129,7 @@ impl<const N: u8, const ES: u8> Add for FLQuire<N, ES> {
             return self;
         }
 
-        let (a, b) = if (self.sf > other.sf) {(self, other)} else {(other, self)};
+        let (a, b) = if self.sf > other.sf {(self, other)} else {(other, self)};
 
         let mut quire = a.quire + (b.quire as i128 >> (a.sf - b.sf)) as u128;
 
@@ -201,7 +201,7 @@ impl<const N: u8, const ES: u8> Mul for FLQuire<N, ES> {
 impl<const N: u8, const ES: u8> Div for FLQuire<N, ES> {
     type Output = Self;
 
-    fn div(self, other: Self) -> Self::Output {
+    fn div(self, _other: Self) -> Self::Output {
         Self::zero()
     }
 }

@@ -7,9 +7,8 @@ use quire::Quire;
 use flquire::FLQuire;
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
-use ndarray::{ArrayView2, ArrayD, Array2, Array1};
-use numpy::{IntoPyArray, ToPyArray, PyArrayDyn, PyReadonlyArrayDyn, PyReadonlyArray2, PyArray2, PyReadonlyArray1, PyArray1};
-use num_traits::identities::{One, Zero};
+use ndarray::{ArrayD, Array2};
+use numpy::{IntoPyArray, PyArrayDyn, PyReadonlyArrayDyn, PyReadonlyArray2, PyArray2};
 
 #[pyfunction]
 fn matmul<'p>(py: Python<'p>, a: PyReadonlyArray2<u32>,  b: PyReadonlyArray2<u32>, _n: u8, es: u8) -> PyResult<&'p PyArray2<u32>> {
@@ -26,31 +25,6 @@ fn matmul<'p>(py: Python<'p>, a: PyReadonlyArray2<u32>,  b: PyReadonlyArray2<u32
 
         let cp = ap.dot(&bp).mapv(|i| Posit::<8, 0>::from(i).0);
         Ok(cp.into_pyarray(py))
-    }
-}
-
-#[pyfunction]
-fn fma_check<'p>(py: Python<'p>, a: PyReadonlyArray1<u32>,  b: PyReadonlyArray1<u32>, c: PyReadonlyArray1<u32>) {
-    let af: Array1<FLQuire<8, 1>> = a.as_array().mapv(|i| Posit::<8, 1>(i).into());
-    let bf: Array1<FLQuire<8, 1>> = b.as_array().mapv(|i| Posit::<8, 1>(i).into());
-    let cp: Array1<Posit<8, 1>> = c.as_array().mapv(|i| Posit::<8, 1>(i));
-
-    let mut acc:FLQuire<8, 1> = FLQuire::<8, 1>::zero();
-
-    for i in 0..af.len() {
-        let m =  af[i] * bf[i];
-        let n = acc + m;
-
-//        println!("{:0128b} {}", n.quire, n.sf);
-
-        if Posit::<8, 1>::from(n) != cp[i] {
-            println!("{:0128b} {}", acc.quire, acc.sf);
-            println!("{:0128b} {}", m.quire, m.sf);
-            println!("{:0128b} {}", n.quire, n.sf);
-            println!("{} {:08b} {:08b}", i, Posit::<8, 1>::from(n), cp[i]);
-            break;
-        }
-        acc = n;
     }
 }
 
@@ -155,8 +129,6 @@ fn namagiri(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(matmul_fl, m)?)?;
     m.add_function(wrap_pyfunction!(matmul_p, m)?)?;
     m.add_function(wrap_pyfunction!(matmul2, m)?)?;
-
-    m.add_function(wrap_pyfunction!(fma_check, m)?)?;
 
     m.add_function(wrap_pyfunction!(add, m)?)?;
     m.add_function(wrap_pyfunction!(add2, m)?)?;

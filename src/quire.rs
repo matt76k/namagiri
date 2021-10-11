@@ -97,7 +97,6 @@ impl<const N: u8, const ES: u8> std::convert::From<Quire<N, ES>> for Posit<N, ES
             };
         }
 
-
         p = if s {((!p).wrapping_add(1) & Self::BODY_MASK) | 0x1u32 << N - 1} else {p};
 
         Self(p)
@@ -164,7 +163,8 @@ impl<const N: u8, const ES: u8> Mul for Quire<N, ES> {
 impl<const N: u8, const ES: u8> Div for Quire<N, ES> {
     type Output = Self;
 
-    fn div(self, other: Self) -> Self::Output {
+    // TODO
+    fn div(self, _other: Self) -> Self::Output {
         Self(0x0)
     }
 }
