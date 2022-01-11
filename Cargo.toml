@@ -13,20 +13,15 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 num-traits = "0.2.14"
-#crate-type = ["cdylib"]
-
-[dependencies.criterion]
-version = "0.3.4"
+criterion= "0.3.5"
+numpy= "0.15.0"
 
 [dependencies.ndarray]
-version = "0.15.0"
+version = "0.15.4"
 features = ["rayon"]
 
-[dependencies.numpy]
-version = "0.14.1"
-
 [dependencies.pyo3]
-version = "0.14.5"
+version = "0.15.1"
 features = ["extension-module"]
 
 [[bench]]
