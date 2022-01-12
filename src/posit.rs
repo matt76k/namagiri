@@ -11,6 +11,12 @@ impl<const N: u8, const ES: u8> fmt::Binary for Posit<N, ES> {
     }
 }
 
+impl<const N: u8, const ES: u8> fmt::Display for Posit<N, ES> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:b} n:{} es:{}", self, N, ES)
+    }
+}
+
 use std::cmp::Ordering;
 impl<const N: u8, const ES: u8> PartialOrd for Posit<N, ES> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
