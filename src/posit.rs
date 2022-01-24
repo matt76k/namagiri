@@ -13,7 +13,7 @@ impl<const N: u8, const ES: u8> fmt::Binary for Posit<N, ES> {
 
 impl<const N: u8, const ES: u8> fmt::Display for Posit<N, ES> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:b} n:{} es:{}", self, N, ES)
+        write!(f, "{:b} n:{} es:{} f32:{}", self, N, ES, f32::from(*self))
     }
 }
 
@@ -156,7 +156,7 @@ impl<const N: u8, const ES: u8> Posit<N, ES> {
     }
 }
 
-use std::ops::{Neg, Add, Sub, Mul, Div, Rem};
+use std::ops::{Neg, Add, Sub, Mul, Div, Rem, AddAssign};
 use num_traits::identities::{One, Zero};
 use num_traits::sign::Signed;
 
@@ -189,10 +189,10 @@ impl<const N: u8, const ES: u8> Signed for Posit<N, ES> {
     }
 
     #[inline]
-    fn is_positive(&self) -> bool { *self > Self::zero() }
+    fn is_positive(&self) -> bool {(*self).0 & Self::SIGN_BIT == 0}
 
     #[inline]
-    fn is_negative(&self) -> bool { *self < Self::zero() }
+    fn is_negative(&self) -> bool {(*self).0 & Self::SIGN_BIT != 0}
 }
 
 impl<const N: u8, const ES: u8> Neg for Posit<N, ES> {
@@ -256,6 +256,12 @@ impl<const N: u8, const ES: u8> Add for Posit<N, ES> {
 
             Self(p)
         }
+    }
+}
+
+impl<const N: u8, const ES: u8> AddAssign for Posit<N, ES> {
+    fn add_assign(&mut self, other: Self) {
+        *self = *self + other;
     }
 }
 
@@ -391,3 +397,6 @@ impl<const N: u8, const ES: u8> One for Posit<N, ES> {
         self.0 == 1 << (N - 2)
     }
 }
+
+use ndarray::ScalarOperand;
+impl<const N: u8, const ES: u8> ScalarOperand for Posit<N, ES> {}

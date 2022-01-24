@@ -21,6 +21,13 @@ impl<const N: u8, const ES: u8> fmt::Binary for Quire<N, ES> {
     }
 }
 
+impl<const N: u8, const ES: u8> fmt::Display for Quire<N, ES> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let p: Posit<N, ES> = (*self).into();
+        write!(f, "{:b} n:{} es:{} f32:{}", self, N, ES, f32::from(p))
+    }
+}
+
 impl<const N: u8, const ES: u8> std::convert::From<Posit<N, ES>> for Quire<N, ES> {
     fn from(item: Posit<N, ES>) -> Self {
 
