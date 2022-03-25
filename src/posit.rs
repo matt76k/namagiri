@@ -13,7 +13,8 @@ impl<const N: u8, const ES: u8> fmt::Binary for Posit<N, ES> {
 
 impl<const N: u8, const ES: u8> fmt::Display for Posit<N, ES> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:b} n:{} es:{} f32:{}", self, N, ES, f32::from(*self))
+//        write!(f, "{:b} n:{} es:{} f32:{}", self, N, ES, f32::from(*self))
+        write!(f, "{}p", f32::from(*self))
     }
 }
 
@@ -29,6 +30,17 @@ impl<const N: u8, const ES: u8> PartialOrd for Posit<N, ES> {
 
             Some(a.cmp(&b))
         }
+    }
+}
+
+use num_traits::bounds::Bounded;
+impl<const N: u8, const ES: u8> Bounded for Posit<N, ES> {
+    fn min_value() -> Self {
+        -Self::MAXPOS
+    }
+
+    fn max_value() -> Self {
+        Self::MAXPOS
     }
 }
 
@@ -149,6 +161,15 @@ impl<const N: u8, const ES: u8> Posit<N, ES> {
         return (xin, s, rc, r, e, frac);
     }
 
+    pub fn into_p<const TN: u8, const TES: u8>(self) -> Posit<TN, TES> {
+        if N == TN && ES == TES {
+            Posit::<TN, TES>(self.0)
+        }
+        else {
+            f32::from(self).into()
+        }
+    }
+
 
     #[inline]
     pub fn is_nar(self) -> bool {
@@ -265,6 +286,7 @@ impl<const N: u8, const ES: u8> AddAssign for Posit<N, ES> {
     }
 }
 
+
 impl<const N: u8, const ES: u8> Sub for Posit<N, ES> {
     type Output = Self;
 
@@ -353,15 +375,13 @@ impl<const N: u8, const ES: u8> Div for Posit<N, ES> {
         else if other.is_zero() {
             Self::NAR
         }
-        else if self.is_one() {
-            other
-        }
         else if other.is_one() {
             self
         }
         else {
             // TODO
-            Self::zero()
+            let recip:Self = (1.0 / f32::from(other)).into();
+            self * recip
         }
     }
 }
@@ -400,3 +420,23 @@ impl<const N: u8, const ES: u8> One for Posit<N, ES> {
 
 use ndarray::ScalarOperand;
 impl<const N: u8, const ES: u8> ScalarOperand for Posit<N, ES> {}
+
+use num_traits::FromPrimitive;
+use std::convert::TryInto;
+
+impl<const N: u8, const ES: u8> FromPrimitive for Posit<N, ES> {
+    fn from_i64(n: i64) -> Option<Posit<N, ES>> {
+        let x:Result<i32, _> = n.try_into();
+        match x {
+            Ok(v) => Some(Posit::<N, ES>::from(v as f32)),
+            Err(_) => None,
+        }
+    }
+    fn from_u64(n: u64) -> Option<Posit<N, ES>> {
+        let x:Result<u32, _> = n.try_into();
+        match x {
+            Ok(v) => Some(Posit::<N, ES>::from(v as f32)),
+            Err(_) => None,
+        }
+    }
+}
