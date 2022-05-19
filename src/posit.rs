@@ -44,6 +44,12 @@ impl<const N: u8, const ES: u8> Bounded for Posit<N, ES> {
     }
 }
 
+impl<const N: u8, const ES: u8> std::convert::From<Posit<N, ES>> for u32 {
+    fn from(item: Posit<N, ES>) -> Self {
+        return item.0;
+    }
+}
+
 impl<const N: u8, const ES: u8> std::convert::From<Posit<N, ES>> for f32 {
     fn from(item: Posit<N, ES>) -> Self {
         if item.is_zero() {

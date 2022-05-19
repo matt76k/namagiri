@@ -12,16 +12,16 @@ path = "src/lib.rs"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-num-traits = "0.2.14"
-criterion= "0.3.5"
-numpy= "0.15.0"
+num-traits = "0.2.15"
+criterion = "0.3.5"
+numpy = "0.16.2"
 
 [dependencies.ndarray]
 version = "0.15.4"
 features = ["rayon"]
 
 [dependencies.pyo3]
-version = "0.15.1"
+version = "0.16.4"
 features = ["extension-module"]
 
 [[bench]]
@@ -30,3 +30,6 @@ harness = false
 
 [profile.release]
 overflow-checks = false
+lto = true
+panic = 'abort'
+codegen-units = 1
