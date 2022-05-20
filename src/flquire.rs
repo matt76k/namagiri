@@ -2,23 +2,21 @@ use crate::posit::Posit;
 use std::cmp::min;
 
 #[derive(Clone, Copy, Default, PartialEq, Eq, Hash)]
-pub struct FLQuire<const N: u8, const ES: u8> {
+pub struct FLQuire<const N: u8, const ES: u8, const SIZE: u8> {
     pub quire:u128,
     pub sf:i32,
 }
 
-impl<const N: u8, const ES: u8> FLQuire<N, ES> {
+impl<const N: u8, const ES: u8, const SIZE: u8> FLQuire<N, ES, SIZE> {
     #[inline]
     pub const fn new(quire: u128, sf: i32) -> Self {
         Self{quire, sf}
     }
 
-    pub const SIZE: u32 = 20;
-    pub const MAXSF: i32 = 36;
     pub const BIAS: i32 = 2i32.pow(ES as u32 + 1) * (N  as i32 - 2);
 }
 
-impl<const N: u8, const ES: u8> std::convert::From<Posit<N, ES>> for FLQuire<N, ES> {
+impl<const N: u8, const ES: u8, const SIZE: u8> std::convert::From<Posit<N, ES>> for FLQuire<N, ES, SIZE> {
     fn from(item: Posit<N, ES>) -> Self {
 
         if item.is_zero() {
@@ -33,7 +31,7 @@ impl<const N: u8, const ES: u8> std::convert::From<Posit<N, ES>> for FLQuire<N, 
 
         let mut quire: u128 = (f >> (32 - (N - ES - 2))) as u128;
 
-        quire = quire << (Self::SIZE - 2 - (N as u32 - ES as u32 - 2));
+        quire = quire << (SIZE as u32  - 2 - (N as u32 - ES as u32 - 2));
 
         quire = if s {(!quire).wrapping_add(1)} else {quire};
 
@@ -41,8 +39,8 @@ impl<const N: u8, const ES: u8> std::convert::From<Posit<N, ES>> for FLQuire<N, 
     }
 }
 
-impl<const N: u8, const ES: u8> std::convert::From<FLQuire<N, ES>> for Posit<N, ES> {
-    fn from(item: FLQuire<N, ES>) -> Self {
+impl<const N: u8, const ES: u8, const SIZE: u8> std::convert::From<FLQuire<N, ES, SIZE>> for Posit<N, ES> {
+    fn from(item: FLQuire<N, ES, SIZE>) -> Self {
 
         if item.quire == 0 {
             return Self::zero();
@@ -51,7 +49,7 @@ impl<const N: u8, const ES: u8> std::convert::From<FLQuire<N, ES>> for Posit<N, 
         let s = (1 << 127) & item.quire != 0;
         let quire = if s {(!item.quire).wrapping_add(1)} else {item.quire};
         
-        let lod = FLQuire::<N, ES>::SIZE - (128 - quire.leading_zeros());
+        let lod = SIZE as u32  - (128 - quire.leading_zeros());
 
         let f = quire << lod;
 
@@ -62,7 +60,7 @@ impl<const N: u8, const ES: u8> std::convert::From<FLQuire<N, ES>> for Posit<N, 
 
         let e_msb = (quire_e << (31 - Self::RS - ES - 1)) & 0x80000000u32;
 
-        let mut rem = (f << (32 - FLQuire::<N, ES>::SIZE + 1)) as u32;
+        let mut rem = (f << (32 - SIZE + 1)) as u32;
 
         rem = (e_o << 32 - ES) | (rem >> ES);
 
@@ -105,7 +103,7 @@ impl<const N: u8, const ES: u8> std::convert::From<FLQuire<N, ES>> for Posit<N, 
 use std::ops::{Neg, Add, Sub, Mul, Div};
 use num_traits::identities::{One, Zero};
 
-impl<const N: u8, const ES: u8> Neg for FLQuire<N, ES> {
+impl<const N: u8, const ES: u8, const SIZE: u8> Neg for FLQuire<N, ES, SIZE> {
     type Output = Self;
 
     fn neg(self) -> Self::Output {
@@ -116,7 +114,7 @@ impl<const N: u8, const ES: u8> Neg for FLQuire<N, ES> {
     }
 }
 
-impl<const N: u8, const ES: u8> Add for FLQuire<N, ES> {
+impl<const N: u8, const ES: u8, const SIZE: u8> Add for FLQuire<N, ES, SIZE> {
     type Output = Self;
 
     fn add(self, other: Self) -> Self::Output {
@@ -133,30 +131,24 @@ impl<const N: u8, const ES: u8> Add for FLQuire<N, ES> {
 
         let mut quire = a.quire + (b.quire as i128 >> (a.sf - b.sf)) as u128;
 
-        if a.sf > Self::MAXSF {
-            Self{quire, sf:Self::MAXSF}
-        }
-        else {
+        let s = (quire & (1 << SIZE - 1)) != 0;
+        let g = (quire & (1 << SIZE - 2)) != 0;
 
-            let s = (quire & (1 << Self::SIZE - 1)) != 0;
-            let g = (quire & (1 << Self::SIZE - 2)) != 0;
+        let ovf = s ^ g;
 
-            let ovf = s ^ g;
+        let sf = if ovf {
+            quire = (quire as i128 >> 1) as u128;
+            a.sf + 1
 
-            let sf = if ovf {
-                quire = (quire as i128 >> 1) as u128;
-                a.sf + 1
+        } else {
+            a.sf
+        };
 
-            } else {
-                a.sf
-            };
-
-            Self{quire, sf}
-        }
+        Self{quire, sf}
     }
 }
 
-impl<const N: u8, const ES: u8> Sub for FLQuire<N, ES> {
+impl<const N: u8, const ES: u8, const SIZE: u8> Sub for FLQuire<N, ES, SIZE> {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self::Output {
@@ -164,7 +156,7 @@ impl<const N: u8, const ES: u8> Sub for FLQuire<N, ES> {
     }
 }
 
-impl<const N: u8, const ES: u8> Mul for FLQuire<N, ES> {
+impl<const N: u8, const ES: u8, const SIZE: u8> Mul for FLQuire<N, ES, SIZE> {
     type Output = Self;
 
     fn mul(self, other: Self) -> Self::Output {
@@ -178,10 +170,10 @@ impl<const N: u8, const ES: u8> Mul for FLQuire<N, ES> {
             self
         }
         else {
-            let mut quire = ((self.quire * other.quire) as i128 >> Self::SIZE - 3) as u128;
+            let mut quire = ((self.quire * other.quire) as i128 >> SIZE - 3) as u128;
 
-            let s = (quire & (1 << Self::SIZE - 1)) != 0;
-            let g = (quire & (1 << Self::SIZE - 2)) != 0;
+            let s = (quire & (1 << SIZE - 1)) != 0;
+            let g = (quire & (1 << SIZE - 2)) != 0;
 
             let ovf = s ^ g;
 
@@ -198,7 +190,7 @@ impl<const N: u8, const ES: u8> Mul for FLQuire<N, ES> {
     }
 }
 
-impl<const N: u8, const ES: u8> Div for FLQuire<N, ES> {
+impl<const N: u8, const ES: u8, const SIZE: u8> Div for FLQuire<N, ES, SIZE> {
     type Output = Self;
 
     fn div(self, _other: Self) -> Self::Output {
@@ -206,7 +198,7 @@ impl<const N: u8, const ES: u8> Div for FLQuire<N, ES> {
     }
 }
 
-impl<const N: u8, const ES: u8> Zero for FLQuire<N, ES> {
+impl<const N: u8, const ES: u8, const SIZE: u8> Zero for FLQuire<N, ES, SIZE> {
 
     fn zero() -> Self {
         Self::new(0x0, 0x0)
@@ -218,13 +210,13 @@ impl<const N: u8, const ES: u8> Zero for FLQuire<N, ES> {
 
 }
 
-impl<const N: u8, const ES: u8> One for FLQuire<N, ES> {
+impl<const N: u8, const ES: u8, const SIZE: u8> One for FLQuire<N, ES, SIZE> {
 
     fn one() -> Self {
-        Self::new(1 << Self::SIZE - 2, 0x0)
+        Self::new(1 << SIZE - 2, 0x0)
     }
 
     fn is_one(self:&Self) -> bool {
-        self.quire == 1 << Self::SIZE - 2 && self.sf == 0
+        self.quire == 1 << SIZE - 2 && self.sf == 0
     }
 }

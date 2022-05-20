@@ -30,8 +30,8 @@ fn matmul<'p>(py: Python<'p>, a: PyReadonlyArray2<u32>,  b: PyReadonlyArray2<u32
 
 #[pyfunction]
 fn matmul_fl<'p>(py: Python<'p>, a: PyReadonlyArray2<u32>,  b: PyReadonlyArray2<u32>, _n: u8, _es: u8) -> PyResult<&'p PyArray2<u32>> {
-    let ap: Array2<FLQuire<8, 1>> = a.as_array().mapv(|i| Posit::<8, 1>(i).into());
-    let bp: Array2<FLQuire<8, 1>> = b.as_array().mapv(|i| Posit::<8, 1>(i).into());
+    let ap: Array2<FLQuire<8, 1, 20>> = a.as_array().mapv(|i| Posit::<8, 1>(i).into());
+    let bp: Array2<FLQuire<8, 1, 20>> = b.as_array().mapv(|i| Posit::<8, 1>(i).into());
 
     let cp = ap.dot(&bp).mapv(|i| Posit::<8, 1>::from(i).0);
     Ok(cp.into_pyarray(py))
