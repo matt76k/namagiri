@@ -100,7 +100,7 @@ impl<const N: u8, const ES: u8, const SIZE: u8> std::convert::From<FLQuire<N, ES
     }
 }
 
-use std::ops::{Neg, Add, Sub, Mul, Div};
+use std::ops::{Neg, Add, Sub, Mul, Div, AddAssign};
 use num_traits::identities::{One, Zero};
 
 impl<const N: u8, const ES: u8, const SIZE: u8> Neg for FLQuire<N, ES, SIZE> {
@@ -145,6 +145,12 @@ impl<const N: u8, const ES: u8, const SIZE: u8> Add for FLQuire<N, ES, SIZE> {
         };
 
         Self{quire, sf}
+    }
+}
+
+impl<const N: u8, const ES: u8, const SIZE: u8> AddAssign for FLQuire<N, ES, SIZE> {
+    fn add_assign(&mut self, other: Self) {
+        *self = *self + other;
     }
 }
 

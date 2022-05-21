@@ -292,7 +292,6 @@ impl<const N: u8, const ES: u8> AddAssign for Posit<N, ES> {
     }
 }
 
-
 impl<const N: u8, const ES: u8> Sub for Posit<N, ES> {
     type Output = Self;
 
